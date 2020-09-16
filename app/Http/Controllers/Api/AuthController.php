@@ -26,6 +26,17 @@ class AuthController extends Controller
 	}
 
 	/**
+	 * Return logged user.
+	 *
+	 * @param Request $request
+	 *
+	 * @return mixed
+	 */
+	public function user(Request $request) {
+		return $request->user();
+	}
+
+	/**
 	 * User login.
 	 *
 	 * @param AuthLoginRequest $request

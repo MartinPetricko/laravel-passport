@@ -3,8 +3,12 @@
 namespace App\Exceptions;
 
 use Exception;
+use Throwable;
 
 class InvalidCredentialsException extends Exception
 {
-    //
+	public function __construct()
+	{
+		parent::__construct(trans('auth.failed'), 401);
+	}
 }

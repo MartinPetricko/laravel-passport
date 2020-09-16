@@ -18,7 +18,7 @@ class AuthService
 	 * @param string $email Email.
 	 * @param string $password Password.
 	 *
-	 * @return object Returns user data object.
+	 * @return array Returns user data object.
 	 * @throws InvalidCredentialsException Throws an exception on unseccessfull credentials validation.
 	 */
 	public function login(string $email, string $password)
@@ -26,7 +26,7 @@ class AuthService
 		$user = User::where('email', $email)->first();
 
 		if (is_null($user)) {
-			throw new InvalidCredentialsException(trans('auth.failed'), 401);
+			throw new InvalidCredentialsException();
 		}
 
 		$data = $this->send_token_request("password", [
@@ -35,12 +35,10 @@ class AuthService
 		]);
 
 		if (!$data) {
-			throw new InvalidCredentialsException(trans('auth.failed'), 401);
+			throw new InvalidCredentialsException();
 		}
 
-		$user['expires_in'] = $data->expires_in;
-
-		return $user;
+		return ["user" => $user, "token" => $data];
 	}
 
 	/**
@@ -54,7 +52,7 @@ class AuthService
 	public function refresh(string $refresh_token)
 	{
 		if (!$refresh_token) {
-			throw new InvalidCredentialsException(trans('auth.failed'), 401);
+			throw new InvalidCredentialsException();
 		}
 
 		$data = $this->send_token_request("refresh_token", [
@@ -62,12 +60,10 @@ class AuthService
 		]);
 
 		if (!$data) {
-			throw new InvalidCredentialsException(trans('auth.failed'), 401);
+			throw new InvalidCredentialsException();
 		}
 
-		$token['expires_in'] = $data->expires_in;
-
-		return $token;
+		return ["token" => $data];
 	}
 
 	/**
@@ -109,7 +105,7 @@ class AuthService
 			return false;
 		}
 
-		$response = (object)$response->json();
+		$response = $response->object();
 
 		Cookie::queue(Cookie::make(self::ACCESS_TOKEN, $response->access_token, 5, null, null, false, false));
 		Cookie::queue(Cookie::make(self::REFRESH_TOKEN, $response->refresh_token, 864000, null, null, false, false));
